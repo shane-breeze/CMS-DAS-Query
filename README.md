@@ -2,6 +2,7 @@
 
 Example of how to run:
 ```
+source setup.sh
 python bin/dataset_query "/SingleMuon/*05Feb2018*/NANOAOD"
 ```
 
@@ -17,4 +18,10 @@ Options:
   -i, --instance TEXT  Instance to be passed to the dasgoclient query
   --do-xsdb-query      Query XSDB for XS
   --help               Show this message and exit.
+```
+
+From your python script you can also do:
+```
+import cms_das_query.das_query as das_query
+dataframe = das_query("/SingleMuon/*05Feb2018*/NANOAOD")
 ```
