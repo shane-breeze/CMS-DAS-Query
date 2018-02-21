@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+import os
+import click
+import cms_das_query.das_query as das_query
+
+@click.command()
+@click.argument("dataset-query")
+@click.option("-o", "--out_file", default=os.path.join(os.getcwd(), "data/datasets.txt"),
+        help="The path to an output file. If it already exists, will append to this file.")
+@click.option("-i", "--instance", default="prod/global",
+        help="Instance to be passed to the dasgoclient query")
+@click.option("--do-xsdb-query", is_flag=True, default=False,
+        help="Query XSDB for XS")
+
+def main(**kwargs):
+    """Generate the dataframe with the dataset info"""
+
+    df = das_query(**kwargs)
+
+if __name__ == "__main__":
+    main()
