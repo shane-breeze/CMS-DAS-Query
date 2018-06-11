@@ -9,4 +9,11 @@ fi
 source $cvmfs_setup
 voms-proxy-init -voms cms --valid 168:00
 
-PYTHONPATH=${PYTHONPATH}:externals/xsecdb/scripts/wrapper/
+top_dir(){
+  local Canonicalize="readlink -f"
+  $Canonicalize asdf &> /dev/null || Canonicalize=realpath
+  dirname "$($Canonicalize "${BASH_SOURCE[0]}")"
+}
+
+PYTHONPATH="${PYTHONPATH}:$(top_dir)/externals/xsecdb/scripts/wrapper/"
+PATH="$PATH:$(top_dir)externals/xsecdb/scripts/wrapper/"

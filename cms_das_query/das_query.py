@@ -102,7 +102,7 @@ def das_query(dataset_query,
         with open(out_file,'w') as f:
             df.update(df[["files"]].applymap('"{}"'.format))
             f.write(df.to_string())
-    logging.info(df.drop(["files"],axis=1))
+    logging.info("\n" + df.drop(["files"],axis=1).to_string())
     return df
 
 if __name__ == "__main__":
