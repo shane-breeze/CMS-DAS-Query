@@ -18,7 +18,7 @@ def xsdb_query(df, out_file=None, attrs=["shower","mtrx_gen","cross_section","ac
     # Loop over dataset querying using the "process_name"
     data = []
     for process_name in df["dataset"]:
-        query = {"DAS": process_name}
+        query = {"process_name": process_name}
 
         # I would very much appreciate it if people would write their code so
         # that a result is returned from a function rather than printing the
