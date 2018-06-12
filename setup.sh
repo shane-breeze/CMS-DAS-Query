@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cvmfs_setup=/cvmfs/cms.cern.ch/cmsset_default.sh
 if [ ! -f $cvmfs_setup ]; then
     echo "Need $cvmfs_setup to find the dasgoclient script"
@@ -7,7 +6,10 @@ if [ ! -f $cvmfs_setup ]; then
 fi
 
 source $cvmfs_setup
-voms-proxy-init -voms cms --valid 168:00
+if voms-proxy-info 2>&1 | grep -q "Proxy not found"; then
+    echo "Proxy not found. Setup your proxy:"
+    voms-proxy-init -voms cms --valid 168:00
+fi
 
 top_dir(){
     local Canonicalize="readlink -f"
@@ -15,5 +17,5 @@ top_dir(){
     dirname "$($Canonicalize "${BASH_SOURCE[0]}")"
 }
 
-PYTHONPATH="${PYTHONPATH}:$(top_dir)/externals/xsecdb/scripts/wrapper/"
-PATH="$PATH:$(top_dir)/externals/xsecdb/scripts/wrapper/"
+export PYTHONPATH=${PYTHONPATH}:$(top_dir)/:$(top_dir)/externals/xsecdb/scripts/wrapper/
+export PATH=$PATH:$(top_dir)/bin/:$(top_dir)/externals/xsecdb/scripts/wrapper/
