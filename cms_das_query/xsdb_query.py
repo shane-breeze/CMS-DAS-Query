@@ -27,10 +27,10 @@ def xsdb_query(df, out_file=None, attrs=["shower","mtrx_gen","cross_section","ac
         p = Popen(shlex.split(command), stdout=PIPE, stdin=PIPE)
         stdout, stderr = p.communicate()
         if not (stdout or stderr) or "error" in "{}{}".format(stdout,stderr).lower() :
-          logging.error("Problem querying XSDB for process_name = " + process_name)
-          result = []
+            logging.error("Problem querying XSDB for process_name = " + process_name)
+            result = []
         else:
-          result = eval(stdout)
+            result = eval(stdout)
 
         # len(result)==0 if there is no xsdb entry. Need to use the genXS tool
         if len(result)==0:
