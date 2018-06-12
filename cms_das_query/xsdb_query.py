@@ -27,8 +27,8 @@ def xsdb_query(data, attrs=["shower", "mtrx_gen", "cross_section", "accuracy"]):
         p = Popen(shlex.split(command), stdout=PIPE, stdin=PIPE)
         stdout, stderr = p.communicate()
         if not (stdout or stderr) or "error" in "{}{}".format(stdout,stderr).lower():
-            logging.error("Problem querying XSDB for process_name = " + process_name)
-            result = []
+            logging.error("Problem querying XSDB. Switching off XSDB query. Note that this is only supported on lxplus")
+            return data
         else:
             result = eval(stdout)
 
