@@ -3,6 +3,7 @@ import sys
 import shlex
 from subprocess import Popen
 from subprocess import PIPE
+from request_wrapper import RequestWrapper
 
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -23,20 +24,31 @@ def xsdb_query(data, attrs=["shower", "mtrx_gen", "cross_section", "accuracy"]):
         # I would very much appreciate it if people would write their code so
         # that a result is returned from a function rather than printing the
         # result to stdout. Rant over
-        command = "python -c \"from request_wrapper import RequestWrapper; RequestWrapper().simple_search({})\"".format(query)
-        p = Popen(shlex.split(command), stdout=PIPE, stdin=PIPE)
-        stdout, stderr = p.communicate()
-        if not (stdout or stderr) or "error" in "{}{}".format(stdout,stderr).lower():
-            logging.error("Problem querying XSDB for process_name = " + process_name)
-            result = []
-        else:
-            result = eval(stdout)
 
-        # len(result)==0 if there is no xsdb entry. Need to use the genXS tool
-        if len(result)==0:
-            logging.warning("No entry found for {}. Try using the genXS tool".format(process_name))
-        else:
-            for k in attrs:
-                dataset[k] = result[0][k]
+        request = RequestWrapper()
+        try:
+            request.simple_search(query)
+        except Exception as e:
+            if e.args == (60, 'SSL certificate problem: unable to get local issuer certificate'):
+                logging.error("XSDB querying is only supported on lxplus")
+                return data
+            raise RuntimeError(e)
+
+
+        #command = "python -c \"from request_wrapper import RequestWrapper; RequestWrapper().simple_search({})\"".format(query)
+        #p = Popen(shlex.split(command), stdout=PIPE, stdin=PIPE)
+        #stdout, stderr = p.communicate()
+        #if not (stdout or stderr) or "error" in "{}{}".format(stdout, stderr).lower():
+        #    logging.error("Problem querying XSDB for process_name = " + process_name)
+        #    result = []
+        #else:
+        #    result = eval(stdout)
+
+        ## len(result)==0 if there is no xsdb entry. Need to use the genXS tool
+        #if len(result)==0:
+        #    logging.warning("No entry found for {}. Try using the genXS tool".format(process_name))
+        #else:
+        #    for k in attrs:
+        #        dataset[k] = result[0][k]
 
     return data
