@@ -2,12 +2,11 @@ import os
 import shlex
 from subprocess import Popen
 from subprocess import PIPE
+from pprint import pformat, pprint
+import importlib
 
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-
-import pandas as pd
-pd.set_option('display.max_colwidth', -1)
 
 from xsdb_query import xsdb_query
 
@@ -51,10 +50,56 @@ def dataset_info_query(dataset, instance):
 
     return summary, files
 
+def create_output(result, outfile, form="json"):
+    """
+    Create the output in a specific format (form). Try to import the module for
+    the output format going down the chain until one is found:
+        pandas -> yaml -> json -> pickle
+    """
+
+    chain = {
+        "pandas": "yaml",
+        "yaml": "json",
+        "json": "pickle",
+    }
+    form_kwargs = {
+        "yaml": {},
+        "json": {"indent": 2, "sort_keys": True},
+        "pickle": {},
+    }
+
+    while True:
+        try:
+            module = importlib.import_module(form)
+        except ImportError:
+            if form not in chain:
+                logging.info("Failed to import any output format")
+                return
+            new_form = chain[form]
+            logging.info(
+                "Could not import {}. Using {} instead".format(
+                    form,
+                    new_form,
+                )
+            )
+            form = new_form
+        else:
+            break
+
+    # Deal with pandas separately
+    if form == "pandas":
+        module.set_option('display.max_colwidth', -1)
+        df = module.DataFrame(result)
+        df.update(df[["files"]].applymap('"{}"'.format))
+        outfile.write(df.to_string())
+    else:
+        module.dump(result, outfile, **form_kwargs[form])
+
 def das_query(dataset_query,
               out_file=None,
               instance="prod/global",
-              do_xsdb_query=False):
+              do_xsdb_query=False,
+              form="pickle"):
     """
     Creates a dataframe from DAS and XSDB queries. 1 dataset per row.
 
@@ -86,25 +131,28 @@ def das_query(dataset_query,
             "nevents": summary["nevents"],
             "nfiles": summary["nfiles"],
             "files": files,
-            })
+        })
 
-    df = pd.DataFrame(data, columns=["eventtype", "dataset", "era", "nevents", "nfiles", "files"])
-    mc_attrs = ["mtrx_gen","shower","cross_section","accuracy"]
     if do_xsdb_query:
-        df = xsdb_query(df,attrs=mc_attrs) # Add NANs to data / non-existent xsdb queries
-        df = df[["eventtype","dataset","era","nevents","nfiles"]+mc_attrs+["files"]]
+        mc_attrs = ["mtrx_gen","shower","cross_section","accuracy"]
+        data = xsdb_query(data, attrs=mc_attrs) # Add NANs to data / non-existent xsdb queries
 
     if out_file is not None:
-        if os.path.exists(out_file):
-            df_existing = pd.read_table(out_file,sep='\s+',comment='#')
-            df_existing["files"] = df_existing["files"].apply(eval)
-            df = pd.concat([df_existing, df]).reset_index(drop=True)
+        out_dir = os.path.dirname(out_file)
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         with open(out_file,'w') as f:
-            df.update(df[["files"]].applymap('"{}"'.format))
-            f.write(df.to_string())
-    logging.info("\n" + df.drop(["files"],axis=1).to_string())
-    return df
+            create_output(data, f, form=form)
+
+    # pformat creates the nice print of pprint but returns the string instead
+    # of sending it to stdout
+    logging.info(
+        "\n" + pformat(
+            [{k: v for k, v in d.items() if k != "files"} for d in data]
+        )
+    )
+    return data
 
 if __name__ == "__main__":
-    df = das_query("/SingleMuon/*/NANOAOD")
-    print df
+    data = das_query("/SingleMuon/*/NANOAOD")
+    pprint(df)

@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 import os
 import argparse
-import cms_das_query.das_query as das_query
+from cms_das_query import das_query
 
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("dataset-query")
+    parser.add_argument("dataset_query")
     parser.add_argument("-o", "--out_file",
                         default=os.path.join(os.getcwd(), "data/datasets.txt"),
                         help="The path to an output file. If it already "
                              "exists, will append to this file.")
     parser.add_argument("-i", "--instance", default="prod/global",
                         help="Instance to be passed to the dasgoclient query")
-    parser.add_arugment("--do-xsdb-query", is_flag=True, default=False,
+    parser.add_argument("-f", "--form", default="json",
+                        help="Format of the output file")
+    parser.add_argument("--do-xsdb-query", action='store_true', default=False,
                         help="Query XSDB for XS")
 
     return parser.parse_args()
@@ -21,7 +23,9 @@ def parse_args():
 def main(**kwargs):
     """Generate the dataframe with the dataset info"""
 
-    df = das_query(**parse_args())
+    options = parse_args()
+    data = das_query(**vars(parse_args()))
+    return data
 
 if __name__ == "__main__":
-    main()
+    data = main()

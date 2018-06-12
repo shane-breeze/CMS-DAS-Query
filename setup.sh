@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cvmfs_setup=/cvmfs/cms.cern.ch/cmsset_default.sh
 if [ ! -f $cvmfs_setup ]; then
     echo "Need $cvmfs_setup to find the dasgoclient script"
@@ -18,5 +17,5 @@ top_dir(){
     dirname "$($Canonicalize "${BASH_SOURCE[0]}")"
 }
 
-PYTHONPATH="${PYTHONPATH}:$(top_dir)/externals/xsecdb/scripts/wrapper/"
-PATH="$PATH:$(top_dir)/bin/:$(top_dir)/externals/xsecdb/scripts/wrapper/"
+export PYTHONPATH=${PYTHONPATH}:$(top_dir)/:$(top_dir)/externals/xsecdb/scripts/wrapper/
+export PATH=$PATH:$(top_dir)/bin/:$(top_dir)/externals/xsecdb/scripts/wrapper/
