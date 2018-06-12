@@ -25,3 +25,9 @@ From your python script you can also do:
 import cms_das_query.das_query as das_query
 dataframe = das_query("/SingleMuon/*05Feb2018*/NANOAOD")
 ```
+
+### With XSDB query:
+1. Make sure the xsdb code was checked out (it's a submodule of this one):
+   * `git submodule update`
+2. source this setup.sh script
+3. make sure you've got the necessary python packages, eg pycurl
