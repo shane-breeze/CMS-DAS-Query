@@ -26,11 +26,15 @@ def xsdb_query(df, out_file=None, attrs=["shower","mtrx_gen","cross_section","ac
         command = "python -c \"from request_wrapper import RequestWrapper; RequestWrapper().simple_search({})\"".format(query)
         p = Popen(shlex.split(command), stdout=PIPE, stdin=PIPE)
         stdout, stderr = p.communicate()
-        result = eval(stdout)
+        if not (stdout or stderr) or "error" in "{}{}".format(stdout,stderr).lower() :
+            logging.error("Problem querying XSDB for process_name = " + process_name)
+            result = []
+        else:
+            result = eval(stdout)
 
         # len(result)==0 if there is no xsdb entry. Need to use the genXS tool
         if len(result)==0:
-            logger.warning("No entry found for {}. Try using the genXS tool".format(process_name))
+            logging.warning("No entry found for {}. Try using the genXS tool".format(process_name))
             data.append({k: np.nan for k in attrs})
         else:
             data.append({k: eval(stdout)[0][k] for k in attrs})
