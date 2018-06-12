@@ -16,4 +16,4 @@ top_dir(){
 }
 
 PYTHONPATH="${PYTHONPATH}:$(top_dir)/externals/xsecdb/scripts/wrapper/"
-PATH="$PATH:$(top_dir)externals/xsecdb/scripts/wrapper/"
+PATH="$PATH:$(top_dir)/externals/xsecdb/scripts/wrapper/"
